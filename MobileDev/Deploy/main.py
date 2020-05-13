@@ -34,6 +34,11 @@ class ScrollableLabel(ScrollView):
 		self.chat_history.text_size = (self.chat_history.width*0.98, None)
 
 		self.scroll_to(self.scroll_to_point)
+
+	def update_chat_history_layout(self, _=None):
+		self.layout.height = self.chat_history.texture_size[1] + 15
+		self.chat_history.height = self.chat_history.texture_size[1]
+		self.chat_history.text_size = (self.chat_history.width *0.98, None)
     	
 
 class ConnectPage(GridLayout):
@@ -125,6 +130,22 @@ class ChatPage(GridLayout):
 
 		Clock.schedule_once(self.focus_text_input, 1)
 		socket_client.start_listening(self.incoming_message, show_error)
+		self.bind(size=self.adjust_fields)
+
+	def adjust_fields(self, *_):
+		if Window.size[1] * 0.1 < 50:
+			new_height = Window.size[1] - 50
+		else:
+			new_height = Window.size[1] * 0.9
+		self.history.height = new_height
+
+		if Window.size[0] * 0.2 < 160:
+			new_width = Window.size[0] - 160
+		else:
+			new_width = Window.size[0] * 0.8
+		self.new_message.width = new_width
+
+		Clock.schedule_once(self.history.update_chat_history_layout, 0.01)
 
 
 	def on_key_down(self, instance, keyboard, keycode, text, modifiers):
@@ -149,7 +170,7 @@ class ChatPage(GridLayout):
 
 
 	def incoming_message(self, username, message):
-		insert = f"[color=20dd20] {chat_app.connect_page.username}[/color] {message}"
+		insert = f"[color=20dd20] {username}[/color] {message}"
 		self.history.update_chat_history(insert)
 
 
